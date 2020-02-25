@@ -25,12 +25,13 @@ reddit = praw.Reddit(client_id='PERSONAL_USE_SCRIPT_14_CHARS', \
 
 subreddit = reddit.subreddit('westworld')
 
+
 #Accessing the thread
 top_subreddit = subreddit.top()
 top_subreddit = subreddit.top(limit=1000)
 
 #Parsing and downloading the data  
-for submission in subreddit.top(limit=1):
+for submission in subreddit.top(limit=1000):
     print(submission.title, submission.id)
   
 topics_dict = { "title":[], \
@@ -39,6 +40,7 @@ topics_dict = { "title":[], \
                 "comms_num": [], \
                 "created": [], \
                 "body":[]}
+comms_dict = { "topic": [], "body":[], "comm_id":[], "created":[] }
 
 #scraping data
 for submission in top_subreddit:
@@ -60,7 +62,12 @@ _timestamp = topics_data["created"].apply(get_date)
 topics_data = topics_data.assign(timestamp = _timestamp)
 
 #Exporting a CSV
-topics_data.to_csv('FILENAME.csv', index=False) 
+comms_data = pd.DataFrame(comms_dict)
+comms_data
+timestamps = comms_data["created"].apply(get_date)
+comms_data = comms_data.assign(timestamp = timestamps)
 
+topics_data.to_csv('westworld.csv', index=False) 
 
-
+topics_data.to_csv("subreddit_westworld_topics.csv")
+comms_data.to_csv("subreddit_westworld_comments.csv")
