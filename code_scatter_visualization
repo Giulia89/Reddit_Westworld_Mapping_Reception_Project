@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Mar 28 17:28:15 2020
+
+@author: giuliataurino
+"""
+
+
+#color scatter standard visualization
+
+import numpy as np
+from bokeh.plotting import figure, output_file, show
+
+N = 4000
+x = np.random.random(size=N) * 100
+y = np.random.random(size=N) * 100
+radii = np.random.random(size=N) * 1.5
+colors = [
+    "#%02x%02x%02x" % (int(r), int(g), 150) for r, g in zip(50+2*x, 30+2*y)
+]
+
+TOOLS="hover,crosshair,pan,wheel_zoom,zoom_in,zoom_out,box_zoom,undo,redo,reset,tap,save,box_select,poly_select,lasso_select,"
+
+p = figure(tools=TOOLS)
+
+p.scatter(x, y, radius=radii,
+          fill_color=colors, fill_alpha=0.6,
+          line_color=None)
+
+output_file("color_scatter.html", title="color_scatter.py example")
+
+show(p)  # open a browser
+
+#westworld color scatter visualization
+import pandas as pd
+
+westworld = pd.read_csv("westworld_topics.csv")
+
+westworld.shape
+westworld.head
+westworld.comms_num.head(1000)
+westworld.score.head(1000)
+
+
+from bokeh.io import push_notebook, show, output_notebook
+from bokeh.layouts import row 
+from bokeh.plotting import figure
+
+output_notebook()
+
+p = figure(title = "Westworld: Reddit Comments")
+p.circle('comms_num', 'score', source=westworld,fill_alpha=0.2, size=10)
+
+show(p)
+
+#colors
+from bokeh.models import ColumnDataSource, ColorBar
+from bokeh.palettes import Spectral6
+from bokeh.transform import linear_cmap
+
+Spectral6
+
+mapper = linear_cmap(field_name='score', palette=Spectral6 ,low=min(westworld['score']) ,high=max(westworld['score']))
+
+p = figure(plot_width=700, plot_height=450, title = "Westworld: Reddit Comments")
+p.scatter('comms_num', 'score', source=westworld,fill_alpha=0.6, line_color=mapper,color=mapper,size=10)
+p.xaxis.axis_label = 'score'
+p.yaxis.axis_label = 'comms_num'
+
+color_bar = ColorBar(color_mapper=mapper['transform'], width=10,  location=(0,0),title="score")
+
+p.add_layout(color_bar, 'right')
+
+#palette
+p = figure(plot_width=700, plot_height=450, title ="Westworld: Reddit Comments")
+p.scatter('comms_num', 'score', source=westworld,fill_alpha=0.6, line_color=mapper,color=mapper,size='score')
+p.xaxis.axis_label = 'score'
+p.yaxis.axis_label = 'comms_num'
+
+#size
+from bokeh.models import LinearInterpolator
+
+westworld
+
+size_mapper=LinearInterpolator(
+    x=[westworld.score.min(),westworld.score.max()],
+    y=[5,50]
+)
+
+p = figure(plot_width=1200, plot_height=700, title = "Westworld: Reddit Comments",
+          toolbar_location="right",
+          tooltips="@title: @score",
+          tools="hover,crosshair,pan,wheel_zoom,zoom_in,zoom_out,box_zoom,undo,redo,reset,tap,save,box_select,poly_select,lasso_select,",)
+p.scatter('comms_num','score',
+          source=westworld,
+          line_color=mapper,
+          fill_alpha=0.6, 
+          fill_color=mapper,
+          size={'field':'score','transform': size_mapper},
+         )
+
+color_bar = ColorBar(color_mapper=mapper['transform'], width=10,  location=(0,0),title="score")
+p.add_layout(color_bar, 'right') 
+
+p.xaxis.axis_label = 'comms_num'
+p.yaxis.axis_label = 'score'
+
+
+output_file("westworld_scatter.html", title="westworld_scatter.py example")
+
+
+show(p)
